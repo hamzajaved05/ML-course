@@ -1,0 +1,21 @@
+PREPROCESSING:
+	1. Split the data using the sklearn split data function into a 80-20 dataset (For the final iteration modified to use most as training data)
+	2. Strong correlations present in data. (Pearson correlation matrix)
+	3. Perform standardization on training set before solving for correlation as scale affects for correlation.
+	4. Perform PCA on our data and check for the accounted variance by number of principal components. (14 represent 99% of variance of data)
+
+TECHNIQUE:
+	Performed multiple classifier such as SVM, kNN, NaiveBayes among others. The performance of deep network was marginally better than other and hence was selected as final model. The architecture was selected using hit and trial. The number of parameters were kept in check so to not overfit the data. The loss selected was cross entropy loss. 
+
+MODEL:
+	Training Hyperparameters:
+	1. Batch size = 25 (smaller batch size tended to perform better (quick convergence and better score). Tested using different train test split seeds.
+	2. Learning rate for Adam. (was optimised from hit and trial and learning the behaviour of error with increase/decrease).
+	3. Weight decay was chosen as non zero for L2 regularisation of weights.	
+	4. Epochs of training = 1500. (Checked the training and test error score. Epochs selected around region when validation errors start to increase)
+
+PREDICTIONS:
+	1. Transformations fitted on the training were applied to the test set.
+	2. Accuracy is reported
+
+Libraries used: Pytorch, Sklearn, pandas

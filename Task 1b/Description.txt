@@ -1,0 +1,16 @@
+Task 1b description:
+
+High-level Algorithm:
+1. Concatenate the features with additional transformed features
+2. Standardize the features (for regression)
+3. Run Regression model and get the mean of k(=10) fold cross validation for various values of lambda.
+4. Get the lambda value which gives the minimum error.
+5. Run the regression model on optimal lambda and get the parameters for the standardized data.
+6. Transform the coefficients for un-transformed/un- standardized data.
+6. Output to csv.
+
+Explaination: 
+the algorithm was run for Lasso regression, Ridge regression and Elastic net. In our training the minimum error was achieved through Lasso regression, followed by Elastic net and then ridge regression. Lasso model was chosen as it provides the best estimate of our model.
+
+Libraries:
+sklearn was used for regression models and for cross validation. pandas was used for data manipulation.
