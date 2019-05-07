@@ -27,12 +27,12 @@ train_np = train.to_numpy()
 # print(np.array([np.sum(train_np[:,0] ==0),np.sum(train_np[:,0] ==1),np.sum(train_np[:,0] ==2),np.sum(train_np[:,0] ==3),np.sum(train_np[:,0] ==4)])/train_np.shape[0]*100)
 
 
-train, test = train_test_split(train_np,test_size = 0.2, random_state=46)
-trainfeatures = train[:, 1:]
-testfeatures = test[:,1:]
-trainlabels = train[:, 0]
-testlabels = test[:,0]
-
+# train, test = train_test_split(train_np,test_size = 0.2, random_state=46)
+trainfeatures = train_np[:, 1:]
+# testfeatures = test[:,1:]
+trainlabels = train_np[:, 0]
+# testlabels = test[:,0]
+#
 # checking covarriance
 # plt.matshow(np.corrcoef(trainfeatures,rowvar = False))
 
@@ -48,13 +48,13 @@ trainfeatures = scaler.transform(trainfeatures)
 # trainfeatures = pca.transform(trainfeatures)
 # plt.matshow(np.corrcoef(trainfeatures,rowvar = False))
 
-testfeatures = scaler.transform(testfeatures)
+# testfeatures = scaler.transform(testfeatures)
 # testfeatures = pca.transform(testfeatures)
 data = np.concatenate((trainfeatures, trainlabels.reshape((-1, 1))), axis = 1)
 data = torch.from_numpy(data)
-testdata = np.concatenate((testfeatures,testlabels.reshape((-1,1))),axis = 1)
-testdata = torch.from_numpy(testdata)
-train_loader = torch.utils.data.DataLoader(data, batch_size = 2048, shuffle = True)
+# testdata = np.concatenate((testfeatures,testlabels.reshape((-1,1))),axis = 1)
+# testdata = torch.from_numpy(testdata)
+train_loader = torch.utils.data.DataLoader(data, batch_size = 256, shuffle = True)
 
 class Net(nn.Module):
     def __init__(self):
@@ -90,46 +90,35 @@ trainloss= []
 testloss = []
 testaccuracy = []
 epochs = 500
-optimizer = optim.SGD(model.parameters(), lr=.01)
+optimizer = optim.Adam(model.parameters(), lr=.0001)
 lossfunct = nn.CrossEntropyLoss()
 
 for epoch in range(1, epochs + 1):
     # training mode (grads flow)
-    model.train()
     for batch_idx, data2 in enumerate(train_loader):
-        data2 = data2.to(device).float()
-        # zero-ing existing gradients
-        optimizer.zero_grad()
-        # forward pass
-        output = model((data2[:,:-1]))
-        output.type()
-        # loss
-        loss = lossfunct(output, data2[:,-1].long())
-        # backward pass
-        loss.backward()
-        # weight update
-        optimizer.step()
-        if epoch % 1 == 0 and batch_idx == 0:
-            # storing training loss
-            trainloss.append(loss)
+        if batch_idx == 0:
             model.eval()
-            test_loss = 0
-            correct = 0
-            with torch.no_grad():
-                output = model(((testdata[:,:-1]).float()))
-                # getting error
-                test_loss += lossfunct(output, testdata[:,-1].long()).item()
-                testloss.append(test_loss)
-                # getting pred
-                pred = output.argmax(dim=1, keepdim=True)
-                # accuracy
-                correct += pred.eq(testdata[:,-1].long().view_as(pred)).sum().item()
-                testaccuracy.append(correct / testdata.shape[0])
-            print('Test set: Average loss: {:.4f}, Accuracy: {}/{} ({:.1f}%)'.format(
-                test_loss, correct, testdata.shape[0],
-                100. * correct / testdata.shape[0]))
-            print('Train Epoch: {} \tLoss: {:.6f}'.format(epoch, loss.item()))
+            output = model(data2[:, :-1])
+            test_loss = lossfunct(output, data2[:,-1].long())
+            testloss.append(test_loss)
+            pred = output.argmax(dim=1, keepdim=True)
+            correct = pred.eq(data2[:, -1].long().view_as(pred)).sum().item()
+            testaccuracy.append(correct / data2.shape[0])
+            if epoch % 1 == 0:
+                print('Test set: Average loss: {:.4f}, Accuracy: {}/{} ({:.1f}%)'.format(
+                    test_loss, correct, data2.shape[0],
+                    100. * correct / data2.shape[0]))
+                print('Train Epoch: {} \tLoss: {:.6f}'.format(epoch, loss.item()))
 
+        else:
+            model.train()
+            data2 = data2.to(device).float()
+            optimizer.zero_grad()
+            output = model((data2[:,:-1]))
+            loss = lossfunct(output, data2[:,-1].long())
+            loss.backward()
+            optimizer.step()
+            trainloss.append(loss)
 
 plt.plot(testloss, label='Test')
 plt.plot(trainloss, label='Train')
